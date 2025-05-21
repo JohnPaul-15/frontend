@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import axios from 'axios';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import apiClient from './axios';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -19,28 +19,24 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
-    // Check for token on mount
     const token = localStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else if (pathname !== '/login') {
-      router.push('/login');
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
-  }, [pathname, router]);
+  }, []);
 
   const login = (token: string) => {
     localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setIsAuthenticated(true);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    delete apiClient.defaults.headers.common['Authorization'];
     setIsAuthenticated(false);
     router.push('/login');
   };

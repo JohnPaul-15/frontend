@@ -2,9 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer base {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --primary: #ff6b00;
+    --primary-hover: #ff8533;
+    --secondary: #ffd700;
+    --accent: #ff6b00;
+    --muted: #1a1a1a;
+    --muted-foreground: #a3a3a3;
+    --card: #141414;
+    --card-foreground: #ffffff;
+    --border: #262626;
+    --input: #262626;
+    --ring: #ff6b00;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors;
+  }
+  
+  .nav-link.active {
+    @apply text-foreground bg-muted;
+  }
+
+  .card {
+    @apply bg-card text-card-foreground rounded-xl border border-border p-6 shadow-sm;
+  }
+
+  .metric-card {
+    @apply card hover:shadow-md transition-shadow;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-black px-4 py-2 rounded-lg hover:opacity-90 transition-opacity;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 @theme inline {
@@ -19,10 +69,4 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { API_ENDPOINTS } from '@/lib/config';
+import { API_ENDPOINTS } from '../../lib/config';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';

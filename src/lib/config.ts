@@ -1,23 +1,39 @@
 import axios from 'axios';
 
-export const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
-export const API_ENDPOINTS = {
+const API_ENDPOINTS = {
   books: `${API_BASE_URL}/books`,
   users: `${API_BASE_URL}/users`,
   login: `${API_BASE_URL}/login`,
-};
+  students: `${API_BASE_URL}/students`,
+  borrower: `${API_BASE_URL}/borrower`,
+} as const;
+
+export { API_ENDPOINTS, API_BASE_URL };
 
 // Configure axios defaults
+axios.defaults.baseURL = API_BASE_URL;
+axios.defaults.withCredentials = true; // For cookies/Sanctum
 axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
-// Add request interceptor for debugging
+// Request interceptor
 axios.interceptors.request.use(
   (config) => {
-    console.log('Making request to:', config.url);
-    console.log('Request data:', config.data);
-    console.log('Request headers:', config.headers);
+    // Add auth token if exists
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // Log request details (dev only)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('→ Request:', config.method?.toUpperCase(), config.url);
+      console.log('Headers:', config.headers);
+      if (config.data) console.log('Data:', config.data);
+    }
+    
     return config;
   },
   (error) => {
@@ -26,33 +42,36 @@ axios.interceptors.request.use(
   }
 );
 
-// Add response interceptor for debugging
+// Response interceptor
 axios.interceptors.response.use(
   (response) => {
-    console.log('Response received:', response.status);
-    console.log('Response data:', response.data);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('← Response:', response.status, response.config.url);
+      console.log('Data:', response.data);
+    }
     return response;
   },
   (error) => {
-    // Direct logging of error properties
-    console.log('Error type:', typeof error);
-    console.log('Error keys:', Object.keys(error));
-    console.log('Error response exists:', !!error.response);
-    console.log('Error response type:', error.response ? typeof error.response : 'none');
-    console.log('Error response keys:', error.response ? Object.keys(error.response) : 'none');
-    
-    // Basic error logging
+    // Enhanced error handling
     if (error.response) {
-      console.error('Response error - Status:', error.response.status);
-      console.error('Response error - Data:', error.response.data);
-      console.error('Response error - URL:', error.config?.url);
-    } else if (error.request) {
-      console.error('Request error - No response received');
-      console.error('Request error - URL:', error.config?.url);
+      console.error('API Error:', {
+        Status: error.response.status,
+        Message: error.response.data?.message || 'No error message',
+        URL: error.config.url,
+        Data: error.response.data
+      });
+
+      // Auto-logout on 401 Unauthorized
+      if (error.response.status === 401) {
+        localStorage.removeItem('authToken');
+        window.location.href = '/login'; // Redirect to login
+      }
     } else {
-      console.error('Error message:', error.message);
+      console.error('Network Error:', error.message);
     }
 
     return Promise.reject(error);
   }
-); 
+);
+
+export default axios;
